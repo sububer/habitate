@@ -1,0 +1,149 @@
+openapi: 3.0.0
+info:
+  title: Portfolio API
+  description: A simple API to manage portfolio resources.
+  version: 1.0.0
+servers:
+  - url: 'https://api.example.com'
+paths:
+  /portfolio:
+    post:
+      summary: Create a new portfolio
+      operationId: createPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - portfolio_name
+                - portfolio_owner_id
+              properties:
+                portfolio_name:
+                  type: string
+                portfolio_owner_id:
+                  type: string
+      responses:
+        '201':
+          description: Portfolio created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: string
+                  portfolio_name:
+                    type: string
+                  asset_list_id:
+                    type: string
+                  portfolio_owner_id:
+                    type: string
+        '400':
+          description: Invalid input
+    get:
+      summary: Get a list of portfolios
+      operationId: getPortfolios
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    portfolio_id:
+                      type: string
+                    portfolio_name:
+                      type: string
+                    asset_list_id:
+                      type: string
+                    portfolio_owner_id:
+                      type: string
+  /portfolio/{portfolio_id}:
+    get:
+      summary: Get a specific portfolio by ID
+      operationId: getPortfolioById
+      parameters:
+        - in: path
+          name: portfolio_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: string
+                  portfolio_name:
+                    type: string
+                  asset_list_id:
+                    type: string
+                  portfolio_owner_id:
+                    type: string
+        '404':
+          description: Portfolio not found
+    put:
+      summary: Update a portfolio by ID
+      operationId: updatePortfolioById
+      parameters:
+        - in: path
+          name: portfolio_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                portfolio_name:
+                  type: string
+                asset_list_id:
+                  type: string
+                portfolio_owner_id:
+                  type: string
+      responses:
+        '200':
+          description: Portfolio updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portfolio_id:
+                    type: string
+                  portfolio_name:
+                    type: string
+                  asset_list_id:
+                    type: string
+                  portfolio_owner_id:
+                    type: string
+        '400':
+          description: Invalid input
+        '404':
+          description: Portfolio not found
+    delete:
+      summary: Delete a portfolio by ID
+      operationId: deletePortfolioById
+      parameters:
+        - in: path
+          name: portfolio_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Portfolio deleted successfully
+        '404':
+          description: Portfolio not found

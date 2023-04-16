@@ -1,0 +1,47 @@
+openapi: 3.0.2
+info:
+  title: Fibonacci API
+  description: A simple REST API to compute Fibonacci numbers.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /fibonacci:
+    get:
+      summary: Compute Fibonacci number
+      description: Get the Fibonacci number of the given integer 'x' and the time elapsed to compute the value.
+      parameters:
+        - name: x
+          in: query
+          description: The integer for which the Fibonacci number will be computed.
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  x:
+                    type: integer
+                    description: The input integer value.
+                  fib_x:
+                    type: integer
+                    description: The Fibonacci number of the input integer 'x'.
+                  time_elapsed:
+                    type: string
+                    description: The time elapsed to compute the Fibonacci number, in the format 'hh:mm:ss'.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing the problem.

@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# Function to print usage instructions
+usage() {
+  echo "Usage: $0 [-e env_arg] [-i infra_arg] [-b build_arg] [-d deploy_arg] [-n init_arg]"
+  echo
+  echo "Options:"
+  echo "  -e env_arg    Specifies the environment -- eg local, pr, int"
+  echo "  -i infra_arg  Creates the infrastructure for the specified environment"
+  echo "  -b build  Does a build for the specified app_type"
+  echo "  -d deploy Execute the deploy operation of specified app_type and env_type"
+  echo "  -n init   Execute the init operation for the local repo"
+  echo "  -a app_type   Spcifies the web app type -- eg express, fastapi, spring"
+  echo
+  exit 1
+}
+
+valid_type() {
+    local input_type="$1"
+    shift
+    local valid="false"
+    local valid_types=("$@")
+
+    for type in "${valid_types[@]}"; do
+        if [ "$input_type" == "$type" ]; then
+            valid="true"
+            break
+        fi
+    done
+    
+    if [ "$valid" == "false" ]; then
+        return -1
+    else
+        return 0
+    fi
+}
+
+APP_ID="fib"
+APP_TYPES=(express fastapi spring)
+ENV_TYPES=(local pr int)
+INFRA_TYPES=(up down)
+
+
+# Check if any arguments were provided
+if [ "$#" -eq 0 ]; then
+  usage
+fi
+
+# Process the arguments using getopts
+while getopts "e:i:bdna:" option; do
+  case "${option}" in
+    e)
+      env_arg=${OPTARG}
+      if ! valid_type "${env_arg}" "${ENV_TYPES[@]}"; then
+        echo "Invalid environment type: ${env_arg}"
+        echo "Valid environment types are: ${ENV_TYPES[@]}"
+        exit 1 
+      fi
+      ;;
+    i)
+      infra_arg=${OPTARG}
+      if ! valid_type "${infra_arg}" "${INFRA_TYPES[@]}"; then
+        echo "Invalid infra arg: ${env_arg}"
+        echo "Valid infra args are: ${INFRA_TYPES[@]}"
+        exit 1 
+      fi
+
+      if [ "${env_arg}" == "local" ]; then
+        echo "infra operations can only be executed for non-local environments"
+        exit 1
+      else
+        create_infra=${infra_arg}
+      fi
+      ;;
+    b)
+      do_build=0
+      ;;
+    d)
+      do_deploy=0
+      ;;
+    a)
+      app_type=${OPTARG}
+        if ! valid_type "${app_type}" "${APP_TYPES[@]}"; then
+          echo "Invalid app_type: ${app_type}"
+          echo "Valid app_types are: ${APP_TYPES[@]}"
+          exit 1 
+        fi
+      ;;
+    n)
+      do_init=true
+
+      # check for local env
+      if [ "${env_arg}" != "local" ]; then
+        echo "init operation can only be executed for local environment"
+        exit 1
+      fi
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+if [ -z "$app_type" ]; then
+  echo "-a app_type is required, eg -a fastapi"
+  exit 1
+fi
+
+
+BUILD_CMD="docker build -t ${APP_ID}:latest apps/${app_type}"
+RESTART_CMD="docker restart ${APP_ID}"
+
+# Execute the operations based on the provided flags and their arguments
+if [ ! -z "${env_arg}" ]; then
+  echo "Setting environment: ${env_arg}"
+  # Add environment commands here
+fi
+
+if [ ! -z "${create_infra}" ]; then
+  echo "Creating infrastructure for environment: ${env_arg}"
+  # Add infra commands here
+fi
+
+if [ ! -z "${do_build}" ]; then
+  echo "Building...
+  environment: ${env_arg}
+  app_type: ${app_type}"
+  eval $BUILD_CMD
+  eval $RESTART_CMD
+fi
+
+if [ ! -z "${do_deploy}" ]; then
+  echo "Deploying...
+  app_type: ${app_type}
+  environment: ${env_arg}"
+  # Add deploy commands here
+fi
+
+if [ ! -z "${init_arg}" ]; then
+  echo "Executing init operation with argument: ${init_arg}"
+  # Add init commands here
+fi
